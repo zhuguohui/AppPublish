@@ -10,6 +10,7 @@ import com.zgh.app.util2.QRCodeGenerator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,6 +58,17 @@ public class AppPublishFrame extends ApkFrame {
         jButton2.setSize(50, 50);
         jButton2.addActionListener(e -> FileCopyUtil.copy(apkInfo.apkOutputDirectory + java.io.File.separator + apkInfo.apkOutputFileName));
         menuPanel.add(jButton2);
+
+        JButton jButton4 = new JButton("打开连接");
+        jButton4.setSize(50, 50);
+        jButton4.addActionListener(e -> {
+            try {
+                Runtime.getRuntime().exec("cmd /c start "+apkInfo.apkDownLoadUrl);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+        menuPanel.add(jButton4);
 
 
         JButton jButton3 = new JButton("打开所在文件夹");
