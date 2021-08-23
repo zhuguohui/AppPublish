@@ -152,29 +152,32 @@ public class QRCodeGenerator {
      * @throws Exception
      */
 
-    public static String encode(List<String> code, String content, String imgPath, boolean needCompress, FileUtil fileUtil) throws Exception {
+    public static String encode(String fileName,List<String> code, String content, String imgPath, boolean needCompress, FileUtil fileUtil) throws Exception {
 
         BufferedImage image = QRCodeGenerator.createImage(code, content, imgPath, needCompress);
-        //获取当前时间并格式化
-        String path = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss").format(new Date());
-        path = path.substring(0, 10);
         //保存文件到磁盘
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImageIO.write(image, "png", os);
         InputStream input = new ByteArrayInputStream(os.toByteArray());
-        return fileUtil.writeFile(input, "D:/qrcode/" + path,"app.png");
+        File tempFile = File.createTempFile(fileName, ".png");
+
+        return fileUtil.writeFile(input, tempFile);
     }
 
     /**
      * 不包含logo的二维码
+     *
+     * @param fileName
      * @param code     需要显示在二维码上方的list字符串集合
+     * @param s
      * @param content  二维码中的内容
+     * @param b
      * @param fileUtil 保存文件的工具类
      * @return 保存成功之后的路径地址
      * @throws Exception
      */
-    public static String encode(List<String> code, String content, FileUtil fileUtil) throws Exception {
-        return QRCodeGenerator.encode(code, content, null, false, fileUtil);
+    public static String encode(String fileName, List<String> code,String content,FileUtil fileUtil) throws Exception {
+        return QRCodeGenerator.encode(fileName,code, content, null, false, fileUtil);
     }
 
 }

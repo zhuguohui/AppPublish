@@ -1,16 +1,22 @@
 package com.zgh.app.bean;
 
 public class ApkInfo {
-    public final String apkName;
-    public final String customName;
-    public final String apkVersionName;
-    public final String apkBuildCode;
+    public  String apkName;
+    public  String customName;
+    public  String apkVersionName;
+    public  String apkBuildCode;
 
-    public final String apkOutputFileName;
-    public final String apkOutputDirectory;
-    public final String apkLogoPath;
+    public  String apkOutputFileName;
+    public  String apkOutputDirectory;
+    public  String apkLogoPath;
 
-    public ApkInfo(String apkName, String customName, String apkVersionName, String apkBuildCode, String apkOutputFileName, String apkOutputDirectory, String apkLogoPath) {
+    //----------发布相关---------
+    public  String apkDownLoadUrl;
+    //-----------email相关---------
+    public String downLoadCodePath;
+
+
+    public ApkInfo(String apkName, String customName, String apkVersionName, String apkBuildCode, String apkOutputFileName, String apkOutputDirectory, String apkLogoPath, String apkDownLoadUrl) {
         this.apkName = apkName;
         this.customName = customName;
         this.apkVersionName = apkVersionName;
@@ -18,5 +24,6 @@ public class ApkInfo {
         this.apkOutputFileName = apkOutputFileName;
         this.apkOutputDirectory = apkOutputDirectory;
         this.apkLogoPath = apkLogoPath;
+        this.apkDownLoadUrl = apkDownLoadUrl;
     }
 }

@@ -1,10 +1,10 @@
 package com.zgh.app.email;
 
 
+import com.zgh.app.bean.ApkInfo;
+import com.zgh.app.bean.EmailItem;
 
-
-
-import java.util.Base64;
+import java.util.*;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -12,48 +12,47 @@ import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.*;
 import java.io.File;
-import java.util.Date;
-import java.util.Properties;
 
 /**
  * Created by dell on 2018-04-15.
  */
 public class SendEmail {
-/*    //发件邮箱的地址
-    private final static String MAIL_NAME = "zhuguohui9999@163.com";
-    private final static String MAIL_ADDR = "zhuguohui9999@163.com";
-    //发件邮箱的密码
-    private final static String MAILPWD = "PBSNUZTUWTKAUAJQ";
-    //设置发送邮件的协议,下面是163邮箱的SMTP服务器
-    private final static String SMTP_HOST = "smtp.163.com";*/
 
-    //发件邮箱的地址
-    private final static String MAIL_NAME = "287718603@qq.com";
-    private final static String MAIL_ADDR = "287718603@qq.com";
-    //发件邮箱的密码
-    private final static String MAILPWD = "manfwbcmpmbwbidd";
-    //设置发送邮件的协议,下面是163邮箱的SMTP服务器
-    private final static String SMTP_HOST = "smtp.qq.com";
+
     //主程序测试
-    public static void main(String[] args) {
+    public static void send(EmailItem email, List<ApkInfo> apkInfos) {
 
+        if (email == null || !email.isEmailEnable()) {
+            return;
+        }
+        if (apkInfos == null || apkInfos.size() == 0) {
+            return;
+        }
+        ApkInfo apkInfo = apkInfos.get(0);
+
+        StringBuffer sb = new StringBuffer();
         //邮件内容
-        String content = "你好，你的应用(读嘉正式版 1.4.4 build 77 )构建成功，已上传fir.下载地址二维码在附件中 <a href=\"http://d.cc53.cn/e6da\">下载链接</a>";
+        sb.append("您好，您的应用" + apkInfo.apkName + "构建成功，已上传到服务器。<br>二维码在附件中 </br>");
+        for (ApkInfo apk : apkInfos) {
+            sb.append("<a href=\"" + apk.apkDownLoadUrl + "\">" + apk.customName + "</a></br></br>");
+        }
+
+        String content = sb.toString();
         //邮件主题
         String topic = "发布提醒";
-        //接收邮箱地址
-        String address = "287718603@qq.com";
-        //发送附件路径
-        String filename = "D:/qrcode/2021/08/21/app.png";
+        List<String> fileList = new ArrayList<>();
+        for (ApkInfo apk : apkInfos) {
+            fileList.add(apk.downLoadCodePath);
+        }
+
 
         //带附件发送
-        boolean tag = sendMail(topic, content, address, filename);
-        System.out.println("带附件发送"+tag);
+        boolean tag = sendMail(email, topic, content, fileList);
+        System.out.println("带附件发送" + tag);
 
         //不带附件发送
-//        boolean tag1 = sendMail(topic, content, address);
-//        System.out.println("不带附件发送" + tag1);
     }
+
 
     /**
      * @author yanawang
@@ -65,19 +64,13 @@ public class SendEmail {
      * 接收人地址可以设置多个，使用','进行分割。如：123@163.com,456@163.com
      */
 //    public static boolean sendMail(String topic, String content, String address) {
-    public static boolean sendMail(String... strArray) {
+    public static boolean sendMail(EmailItem email, String topic, String content, List<String> fileList) {
         boolean bool = false;
 
-        System.out.println(strArray.length);
-        if (strArray.length < 3) {
-            return bool;
-        }
         try {
-            String topic = strArray[0];
-            String content = strArray[1];
-            String address = strArray[2];
-            Address[] addressTO = setAddressTo(address);
-            MimeMessage message = setMessage(addressTO, topic);
+
+            Address[] addressTO = setAddressTo(email.address);
+            MimeMessage message = setMessage(email, addressTO, topic);
             /*添加正文内容*/
             Multipart multipart = new MimeMultipart();
             BodyPart contentPart = new MimeBodyPart();
@@ -87,15 +80,17 @@ public class SendEmail {
             multipart.addBodyPart(contentPart);
 
             /*添加附件*/
-            if (strArray.length > 3) {
-                String file = strArray[3];
-                File usFile = new File(file);
-                MimeBodyPart fileBody = new MimeBodyPart();
-                DataSource source = new FileDataSource(file);
-                fileBody.setDataHandler(new DataHandler(source));
+            int index = 1;
+            if (fileList != null && fileList.size() > 0) {
+                for (String path : fileList) {
+                    MimeBodyPart fileBody = new MimeBodyPart();
+                    DataSource source = new FileDataSource(path);
+                    fileBody.setDataHandler(new DataHandler(source));
 
-                fileBody.setFileName("app_download_code.png");
-                multipart.addBodyPart(fileBody);
+                    fileBody.setFileName("app_download_code_" + index + ".png");
+                    multipart.addBodyPart(fileBody);
+                    index++;
+                }
             }
             message.setContent(multipart);
             message.setSentDate(new Date());
@@ -116,15 +111,15 @@ public class SendEmail {
      * @Description: 设置邮箱信息
      * @date 2018-2-5 上午 11:20
      */
-    private static MimeMessage setMessage(Address[] addressTO, String topic)
+    private static MimeMessage setMessage(EmailItem email, Address[] addressTO, String topic)
             throws MessagingException {
 
         final Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.user", MAIL_NAME);
-        props.put("mail.addr", MAIL_ADDR);
-        props.put("mail.password", MAILPWD);
+        props.put("mail.smtp.host", email.smtpUrl);
+        props.put("mail.user", email.address);
+        props.put("mail.addr", email.address);
+        props.put("mail.password", email.password);
         Authenticator authenticator = new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 String userName = props.getProperty("mail.user");
@@ -141,8 +136,6 @@ public class SendEmail {
                 props.getProperty("mail.addr"));
         message.setFrom(form);
         message.setRecipients(Message.RecipientType.TO, addressTO);
-        //需要抄送给自己，避免163认为是垃圾邮件
-        message.addRecipients(Message.RecipientType.CC, MAIL_ADDR);
         message.setSubject(topic);
         message.addHeader("charset", "UTF-8");
         return message;

@@ -1,82 +1,93 @@
 package com.zgh.app;
 
-import com.zgh.app.listener.JFrameUtil;
+import com.zgh.app.bean.ApkInfo;
+import com.zgh.app.bean.PublishInfo;
+import com.zgh.app.email.SendEmail;
+import com.zgh.app.util2.FileCopyUtil;
 import com.zgh.app.util2.FileUtil;
 import com.zgh.app.util2.ImageCopyUtil;
 import com.zgh.app.util2.QRCodeGenerator;
-import com.zgh.app.util2.ShowUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class AppPublishFrame extends ApkFrame {
-    public AppPublishFrame() throws HeadlessException {
-        super();
-        //设置托盘隐藏功能
-        JFrameUtil.miniTrayEnable(this);
-        String codePath = createCode();
 
 
+    PublishInfo pushInfo;
 
-        JPanel jPanel=new JPanel();
-        jPanel.setLayout(new BoxLayout(jPanel,BoxLayout.Y_AXIS));
-        jPanel.setSize(500,0);
-
-        for(int i=0;i<3;i++) {
-
-            JLabel label = new JLabel();
-            label.setIcon(new ImageIcon(codePath));
-            jPanel.add(label);
-
-            //复制功能
-            JPanel menuPanel=new JPanel();
-            menuPanel.setLayout(new FlowLayout());
-            menuPanel.setSize(500,200);
-
-            JButton jButton = new JButton("复制");
-            jButton.setSize(50,50);
-            jButton.addActionListener(e -> ImageCopyUtil.copyImage(label));
-            menuPanel.add(jButton);
-
-            JButton jButton2 = new JButton("发送");
-            jButton2.setSize(50,50);
-
-            menuPanel.add(jButton2);
-
-            jPanel.add(menuPanel);
-
-            //增加间隙
-            Label emptyLabel=new Label();
-            emptyLabel.setSize(10,50);
-            jPanel.add(emptyLabel);
-        }
-
-        //设置垂直滚动
-        JScrollPane jScrollPane=new JScrollPane(jPanel,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//        jScrollPane.setSize(width,height);
-        jScrollPane.setViewportView(jPanel);
-        this.getContentPane().add(jScrollPane);
-
-
-        //    jFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        this.setAlwaysOnTop(true);
-        this.setResizable(false);
-        this.setVisible(true);
+    public AppPublishFrame(PublishInfo pushInfo) throws HeadlessException {
+        super(pushInfo.getApkInfos());
+        this.pushInfo = pushInfo;
+        SendEmail.send(pushInfo.getEmailInfo(),pushInfo.getApkInfos());
     }
-    private static String createCode(){
-        List<String> titles = new ArrayList<>();
-        titles.add("发布:拓尔思");
-        titles.add("名称:读嘉App");
-        titles.add("版本:1.4.4.901 (Build 72)");
-        titles.add("更新于: 2021-08-21 12:50");
-        String logoPath = "E:\\WORK\\GIT\\HangZhou\\JXRB\\JXRB_android\\app\\src\\main\\res\\drawable-xxxhdpi\\ic_logo.png";
 
-        String content = "http://d.cc53.cn/e6da";
+    @Override
+    protected void buildItem(ApkInfo apkInfo) {
+        JPanel imgPanel = new JPanel();
+        imgPanel.setSize(500, 500);
+
+        String codePath = createCode(apkInfo);
+        apkInfo.downLoadCodePath=codePath;
+        JLabel label = new JLabel();
+        label.setIcon(new ImageIcon(codePath));
+        label.setLocation(0, 0);
+        label.setHorizontalAlignment(JLabel.CENTER);
+
+        imgPanel.add(label, BorderLayout.CENTER);
+
+        jPanel.add(imgPanel);
+
+        //复制功能
+        JPanel menuPanel = new JPanel();
+
+        menuPanel.setLayout(new FlowLayout());
+        menuPanel.setSize(300, 200);
+
+        JButton jButton = new JButton("复制二维码");
+        jButton.setSize(50, 50);
+        jButton.addActionListener(e -> ImageCopyUtil.copyImage(label));
+        menuPanel.add(jButton);
+
+        JButton jButton2 = new JButton("复制apk");
+        jButton2.setSize(50, 50);
+        jButton2.addActionListener(e -> FileCopyUtil.copy(apkInfo.apkOutputDirectory + java.io.File.separator + apkInfo.apkOutputFileName));
+        menuPanel.add(jButton2);
+
+
+        JButton jButton3 = new JButton("打开所在文件夹");
+        jButton3.setSize(50, 50);
+        jButton3.addActionListener(e -> FileUtil.openDir(apkInfo.apkOutputDirectory));
+
+        menuPanel.add(jButton3);
+
+
+        jPanel.add(menuPanel);
+
+        //增加间隙
+        Label emptyLabel = new Label();
+        emptyLabel.setSize(10, 50);
+        jPanel.add(emptyLabel);
+    }
+
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private static String createCode(ApkInfo apkInfo) {
+        List<String> titles = new ArrayList<>();
+        titles.add("应用名称:" + apkInfo.apkName);
+        titles.add("版本名称:" + apkInfo.customName);
+        titles.add("版本号:" + apkInfo.apkVersionName);
+        titles.add("BuildCode:" + apkInfo.apkBuildCode);
+        titles.add("更新时间:" + sdf.format(new Date()));
+        String logoPath = apkInfo.apkLogoPath;
+        String content = apkInfo.apkDownLoadUrl;
+        String fileName = apkInfo.apkName + "_" + apkInfo.customName + "";
         try {
-            return   QRCodeGenerator.encode(titles, content, logoPath, true, new FileUtil());
+            return QRCodeGenerator.encode(fileName, titles, content, logoPath, true, new FileUtil());
         } catch (Exception e) {
             e.printStackTrace();
         }

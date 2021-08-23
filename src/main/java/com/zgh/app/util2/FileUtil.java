@@ -7,13 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class FileUtil {
-    public String writeFile(InputStream input, final String filePath, String fileName) {
-        File file = new File(filePath);
+    public String writeFile(InputStream input, final File outFile) {
+        System.out.println("临时文件位置:"+outFile.getPath());
         try {
-            if (!file.exists()) {
-                file.mkdirs();
-            }
-            File outFile = new File(filePath, fileName);
             FileOutputStream fos = new FileOutputStream(outFile);
             byte[] bytes = new byte[1024];
             int len = 0;

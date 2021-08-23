@@ -11,7 +11,7 @@ version '1.0-SNAPSHOT'
 jar {
 
     manifest {
-      //  attributes 'Main-Class': 'com.zgh.app.Test'
+        attributes 'Main-Class': 'com.zgh.app.Test'
         attributes 'Implementation-Title': 'Gradle'
     }
 
@@ -28,11 +28,11 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
     implementation 'com.google.zxing:core:3.4.1'
     implementation 'com.google.zxing:javase:3.4.1'
     implementation 'javax.mail:mail:1.5.0-b01'
+    implementation 'com.google.code.gson:gson:2.6.2'
 
 }
 
