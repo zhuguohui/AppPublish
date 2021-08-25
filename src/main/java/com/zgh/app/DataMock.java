@@ -42,7 +42,7 @@ public class DataMock {
         apkInfos.add(apkInfo);
         apkInfos.add(apkInfo2);
         apkInfos.add(apkInfo3);
-        EmailItem emailItem=new EmailItem("smtp.qq.com","287718603@qq.com","manfwbcmpmbwbidd",true);
+        EmailItem emailItem=new EmailItem("smtp.qq.com","287718603@qq.com","",true);
         publishInfo=new PublishInfo(emailItem,apkInfos);
 
     }
